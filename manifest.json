@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "TTRPG Dice Roller",
+  "version": "1.0",
+  "description": "A simple dice roller for tabletop roleplaying games.",
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/dice16.png",
+      "48": "icons/dice48.png",
+      "128": "icons/dice128.png"
+    },
+    "default_title": "TTRPG Dice Roller"
+  },
+  "icons": {
+    "16": "icons/dice16.png",
+    "48": "icons/dice48.png",
+    "128": "icons/dice128.png"
+  }
+  // Permissions are generally not needed for a self-contained popup,
+  // but if you needed storage or other APIs, you'd add them here.
+}

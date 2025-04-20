@@ -1,0 +1,91 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 10px;
+  width: 700px; /* Increased width to accommodate larger dice */
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#rollBtn {
+  margin-bottom: 15px;
+  padding: 8px 15px;
+  font-size: 1.1em;
+  cursor: pointer;
+  width: 100%; /* Make button full width */
+  text-align: center;
+}
+
+#rollBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* The container for original dice icons (selection buttons) */
+.dice-selector {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px; /* Increased gap slightly for larger icons */
+  margin-bottom: 15px;
+  width: 100%;
+  min-height: 80px; /* Increased min-height for larger icons */
+  /* No border/padding here anymore as selection is shown in resultsArea */
+}
+
+.dice-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px; /* Increased padding slightly */
+  border: 1px solid #ccc;
+  border-radius: 8px; /* Increased border-radius slightly */
+  background-color: #f9f9f9;
+  user-select: none; /* Prevent text selection on clicks */
+}
+
+.dice-icon img {
+    /* Doubled size for selection buttons */
+    width: 80px;
+    height: 80px;
+    display: block;
+}
+
+/* The area where selected dice appear before rolling, and where animation happens */
+.results {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px; /* Increased gap slightly for larger icons */
+  min-height: 100px; /* Increased min-height for larger icons */
+  width: 100%;
+  border: 1px dashed #ccc; /* Optional: visualize the selection area */
+  padding: 10px; /* Increased padding slightly */
+  box-sizing: border-box;
+}
+
+/* Style for dice icons shown in resultsArea BEFORE rolling */
+.selected-die-icon {
+    /* Doubled size for selected dice icons */
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    opacity: 1.0; /* Full opacity */
+    border: 1px solid #999; /* Optional: visual cue */
+    border-radius: 8px; /* Increased border-radius slightly */
+    padding: 4px; /* Increased padding slightly */
+    box-sizing: border-box;
+}
+
+/* Style for dice images DURING and AFTER rolling animation */
+.rolled-die {
+    /* Doubled size for the rolled dice */
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
