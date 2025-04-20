@@ -1,6 +1,7 @@
 # TTRPG Dice Roller Chrome Extension
 
 A simple and intuitive Chrome Extension for rolling dice for tabletop roleplaying games directly from your browser toolbar.
+
 ![Example of the User Interface](UI_example.png)
 
 ## Features
@@ -13,7 +14,7 @@ A simple and intuitive Chrome Extension for rolling dice for tabletop roleplayin
 - **Roll Animation & Sound**: Dice visually tumble with a pleasing falloff animation and sound effect when rolled.
 - **Re-roll Individual Dice**: Click on a rolled die image to re-roll just that single die with animation and sound, and update the total sum.
 - **"Roll Again" Functionality**: Click the main button when no new dice are selected to re-roll the exact same pool as the last roll.
-- **Instant Roll (Ctrl+Click)**: Hold Ctrl and click a dice selection icon to instantly roll 1 of that die type, bypassing the selection area.
+- **Instant Roll (Right Click)**: Right click a dice selection icon to instantly roll 1 of that die type, bypassing the selection flow.
 
 ## Installation
 
