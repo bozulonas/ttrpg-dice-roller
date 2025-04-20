@@ -5,7 +5,7 @@ body {
   padding: 15px;
   background-color: #ffffff; /* Change body background to white */
   box-sizing: border-box;
-  width: 700px; 
+  width: 650px; 
 }
 
 .container {
@@ -25,7 +25,7 @@ body {
   border-radius: 5px;
   background-color: #4CAF50;
   color: white;
-  width: 100%; /* Make button full width */
+  width: 50%; /* Make button full width */
   font-family: 'IM Fell English', serif; /* Ensure button uses the font too */
 }
 

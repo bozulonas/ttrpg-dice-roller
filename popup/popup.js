@@ -49,7 +49,7 @@ function updateRollButtonDisplay() {
          rollBtn.disabled = false; // Can roll again even if 0 currently selected
     }
     else {
-        rollBtn.textContent = 'Roll: Select dice below';
+        rollBtn.textContent = 'Roll: Select dice above';
         rollBtn.disabled = true;
     }
 }
