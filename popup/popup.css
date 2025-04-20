@@ -1,27 +1,36 @@
 body {
-  font-family: sans-serif;
+  font-family: 'IM Fell English', serif; /* Apply the new font */
+  font-size: 16px; /* Increase base font size */
   margin: 0;
-  padding: 10px;
-  width: 700px; /* Increased width to accommodate larger dice */
+  padding: 15px;
+  background-color: #ffffff; /* Change body background to white */
+  box-sizing: border-box;
+  width: 700px; 
 }
 
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #ffffff; /* Ensure container is also white */
 }
 
 #rollBtn {
-  margin-bottom: 15px;
-  padding: 8px 15px;
-  font-size: 1.1em;
+  margin-bottom: 5px; /* Space below button */
+  padding: 12px; /* Slightly larger padding */
+  font-size: 1.1em; /* Slightly larger font relative to body */
+  font-weight: bold;
   cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: white;
   width: 100%; /* Make button full width */
-  text-align: center;
+  font-family: 'IM Fell English', serif; /* Ensure button uses the font too */
 }
 
 #rollBtn:disabled {
-  opacity: 0.5;
+  background-color: #ccc;
   cursor: not-allowed;
 }
 
@@ -29,12 +38,16 @@ body {
 .dice-selector {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-around; /* Evenly space icons */
+  align-items: center;
+  margin-bottom: 15px; /* Space below the selector */
+  padding: 5px; /* Add some padding */
+  background-color: #ffffff; /* Make selector background white */
+  border-radius: 5px; /* Optional: slightly round corners */
+  width: 100%; /* Ensure it takes full width */
+  box-sizing: border-box;
   gap: 10px; /* Increased gap slightly for larger icons */
-  margin-bottom: 15px;
-  width: 100%;
   min-height: 80px; /* Increased min-height for larger icons */
-  /* No border/padding here anymore as selection is shown in resultsArea */
 }
 
 .dice-icon {
@@ -42,10 +55,12 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  padding: 10px; /* Increased padding slightly */
+  padding: 5px;
+  border-radius: 3px;
+  background-color: #ffffff; /* Ensure icon background is white */
+  transition: background-color 0.2s; /* Smooth hover effect */
   border: 1px solid #ccc;
   border-radius: 8px; /* Increased border-radius slightly */
-  background-color: #f9f9f9;
   user-select: none; /* Prevent text selection on clicks */
 }
 
@@ -59,14 +74,15 @@ body {
 /* The area where selected dice appear before rolling, and where animation happens */
 .results {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px; /* Increased gap slightly for larger icons */
-  min-height: 100px; /* Increased min-height for larger icons */
+  flex-wrap: wrap; /* Allow dice to wrap */
+  justify-content: center; /* Center dice horizontally */
+  align-items: center; /* Center dice vertically */
+  padding: 10px;
+  min-height: 110px; /* Ensure minimum height */
   width: 100%;
-  border: 1px dashed #ccc; /* Optional: visualize the selection area */
-  padding: 10px; /* Increased padding slightly */
+  background-color: #ffffff; /* Make results area background white */
   box-sizing: border-box;
+  position: relative; /* Needed for absolute positioning of sum */
 }
 
 /* Style for dice icons shown in resultsArea BEFORE rolling */
@@ -88,4 +104,24 @@ body {
     width: 100px;
     height: 100px;
     object-fit: contain;
+}
+
+/* Hint Text Styling */
+.hint-text {
+    font-size: 0.9em; /* Adjust relative to new base size */
+    color: #555;      /* Greyish color */
+    text-align: center;
+    margin-top: 2px;   /* Small space below the button */
+    margin-bottom: 5px; /* Space above the dice selector */
+    width: 100%;
+}
+
+/* Total Sum Styling */
+.total-sum {
+    font-weight: bold;
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 1.2em; /* Increase sum font size relative to body */
+    color: #333;
 }
