@@ -16,7 +16,8 @@
     "16": "icons/dice16.png",
     "48": "icons/dice48.png",
     "128": "icons/dice128.png"
-  }
-  // Permissions are generally not needed for a self-contained popup,
-  // but if you needed storage or other APIs, you'd add them here.
+  },
+  "permissions": [
+    "storage"
+  ]
 }

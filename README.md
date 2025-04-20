@@ -1,6 +1,7 @@
 # TTRPG Dice Roller Chrome Extension
 
 A simple and intuitive Chrome Extension for rolling dice for tabletop roleplaying games directly from your browser toolbar.
+![Example of the User Interface](UI_example.png)
 
 ## Features
 

@@ -8,6 +8,8 @@ let lastRollsConfig = {};
 // This array will be updated when individual dice are re-rolled.
 let lastRollResults = [];
 
+// Flag to prevent multiple rolls at once
+let isRolling = false;
 
 // --- DOM Elements ---
 const rollBtn = document.getElementById('rollBtn'); // Now the main button at the top
@@ -19,10 +21,21 @@ const resultsArea = document.getElementById('resultsArea'); // This area now sho
 // Assuming this path is correct for your sound file
 const rollSound = new Audio('../audio/560085__vartian__rolling-single-and-dual-20-sided-dice_trimmed_1.1.wav');
 
+// --- Load Last Roll Config on Startup ---
+chrome.storage.local.get(['lastRollsConfig'], (result) => {
+  if (chrome.runtime.lastError) {
+    console.error('Error loading lastRollsConfig:', chrome.runtime.lastError);
+  } else if (result.lastRollsConfig && typeof result.lastRollsConfig === 'object') {
+    console.log('Loaded lastRollsConfig from storage:', result.lastRollsConfig);
+    lastRollsConfig = result.lastRollsConfig;
+    // Update the button display immediately after loading the config
+    updateRollButtonDisplay(); 
+  }
+});
+
 // --- Functions ---
 
 // Update the Roll button text and state
-// This now directly uses the selectedDice state, which is updated by handleDiceClick and removeSelectedDie.
 function updateRollButtonDisplay() {
     let notation = [];
     let totalDice = 0;
@@ -75,6 +88,8 @@ function rollDie(dieType) {
   return Math.floor(Math.random() * maxFaces) + 1;
 }
 
+// --- Commented out: Replaced by delegated listener on resultsArea ---
+/*
 // Handle clicks on selected dice icons in the resultsArea to remove them BEFORE a roll
 function removeSelectedDie(event) {
     const clickedDieElement = event.currentTarget;
@@ -93,7 +108,7 @@ function removeSelectedDie(event) {
     }
     // If count is already 0 (shouldn't happen if UI is in sync), do nothing
 }
-
+*/
 
 // Handle dice icon clicks (left and right) on the original icons in the selector
 function handleDiceClick(event) {
@@ -113,10 +128,13 @@ function handleDiceClick(event) {
       performInstantRoll(dieType);
       // ----------------------------------------------
   } else { // Left click
+      // Create a container for the icon and remove button
+      const container = document.createElement('div');
+      container.classList.add('selected-die-icon'); // Apply jiggle/styling
+      container.dataset.die = dieType; // Store die type on container
+
       // Add a visual representation of the selected die to the resultsArea
       const selectedDieElement = document.createElement('img');
-      selectedDieElement.classList.add('selected-die-icon'); // Use a new class for pre-roll icons
-      selectedDieElement.dataset.die = dieType; // Store die type
       // Use the max face image as the default visual representation before rolling
       const maxFace = parseInt(dieType.substring(1));
       let defaultFace = maxFace;
@@ -132,10 +150,16 @@ function handleDiceClick(event) {
       selectedDieElement.src = `../images/${dieType}_face${defaultFace}.png`;
       selectedDieElement.alt = dieType;
 
-      // Add the click listener to the newly created selected die icon for removal
-      selectedDieElement.addEventListener('click', removeSelectedDie);
+      // Create the remove button ('X')
+      const removeBtn = document.createElement('span'); // Or 'button'
+      removeBtn.classList.add('remove-pending-btn');
+      removeBtn.textContent = 'X';
 
-      resultsArea.appendChild(selectedDieElement); // Add it to the results area
+      // Append image and button to container
+      container.appendChild(selectedDieElement);
+      container.appendChild(removeBtn);
+
+      resultsArea.appendChild(container); // Add the container to the results area
 
       selectedDice[dieType]++; // Increment state count
 
@@ -165,6 +189,7 @@ function performInstantRoll(dieType) {
     // 4. Create and add the die element
     const dieElement = document.createElement('img');
     dieElement.classList.add('rolled-die'); // Use rolled-die class
+    dieElement.classList.add('is-rolling'); // Add is-rolling class initially
     dieElement.dataset.die = dieType;
     dieElement.dataset.index = 0; // Only one die, index is 0
     dieElement.src = getRandomFaceImage(dieType); // Start with random face
@@ -213,6 +238,7 @@ function performInstantRoll(dieType) {
             // 8. Add re-roll listener (optional for instant roll, but consistent)
             dieElement.addEventListener('click', rerollSingleDie);
              dieElement.style.pointerEvents = 'auto'; // Ensure clickable if needed
+             dieElement.classList.remove('is-rolling'); // Remove is-rolling class when settled
         }
     }
 
@@ -253,7 +279,6 @@ function rerollSingleDie(event) {
     const minDuration = 250; // 0.25 seconds
     const maxDuration = 800; // 0.8 seconds
     const animationDuration = Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
-
     let startTime = Date.now();
 
     function animateSingle() {
@@ -306,18 +331,22 @@ function rerollSingleDie(event) {
 
 // Perform the rolling animation and calculate results
 function performRoll() {
-  let diceToRollConfig;
+   if (isRolling) return; // Re-check here just in case
+   isRolling = true; // Set flag to true at the start of the roll
+   rollBtn.disabled = true; // Disable button during roll
 
-  // Determine which configuration to roll
-  const totalSelectedVisualDice = Object.values(selectedDice).reduce((sum, count) => sum + count, 0);
+   let diceToRollConfig;
 
-  if (totalSelectedVisualDice > 0) {
-      // User has selected new dice visually (icons are in resultsArea)
-      diceToRollConfig = { ...selectedDice }; // Use the current selection
-       // Clear the selected dice icons from the resultsArea before starting animation
-       resultsArea.innerHTML = '';
-       // Reset selectedDice state after capturing the config
-       selectedDice = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0 };
+   // Determine which configuration to roll
+   const totalSelectedVisualDice = Object.values(selectedDice).reduce((sum, count) => sum + count, 0);
+
+   if (totalSelectedVisualDice > 0) {
+       // User has selected new dice visually (icons are in resultsArea)
+       diceToRollConfig = { ...selectedDice }; // Use the current selection
+        // Clear the selected dice icons from the resultsArea before starting animation
+        resultsArea.innerHTML = '';
+        // Reset selectedDice state after capturing the config
+        selectedDice = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0 };
 
   } else if (Object.keys(lastRollsConfig).length > 0) {
       // No new selection (resultsArea is empty), but there was a last roll config stored
@@ -331,7 +360,12 @@ function performRoll() {
 
   // Store the config being rolled for potential "Roll Again" (which is now just clicking the button again)
   lastRollsConfig = { ...diceToRollConfig };
-
+  // Save the configuration to local storage
+  chrome.storage.local.set({ lastRollsConfig: lastRollsConfig }, () => {
+    if (chrome.runtime.lastError) {
+      console.error('Error saving lastRollsConfig:', chrome.runtime.lastError);
+    }
+  });
 
   let diceToAnimate = [];
   for (const type in diceToRollConfig) {
@@ -350,13 +384,14 @@ function performRoll() {
   rollSound.play().catch(e => console.error("Sound playback failed:", e)); // Play sound, catch potential errors
 
   const totalDiceCount = diceToAnimate.length;
-  let completedRolls = 0;
   let currentRollResults = []; // Store results for this roll
+  let animationPromises = []; // Initialize promise array
 
   // Create new image elements for the animation in the now empty resultsArea
   diceToAnimate.forEach((dieType, index) => {
     const dieElement = document.createElement('img');
     dieElement.classList.add('rolled-die'); // Use rolled-die class for animation
+    dieElement.classList.add('is-rolling'); // Add is-rolling class initially
     dieElement.dataset.die = dieType; // Store die type on the element
     dieElement.dataset.index = index; // Store the original index for re-rolling
 
@@ -377,60 +412,74 @@ function performRoll() {
     const maxDuration = 1000; // 1.0 seconds
     const animationDuration = Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
 
-
     let startTime = Date.now();
 
-    function animate() {
-      const elapsed = Date.now() - startTime;
+    // Wrap animation in a Promise
+    const animationPromise = new Promise((resolve, reject) => {
+      function animate() {
+        try { // Add try block for error handling within animation
+          const elapsed = Date.now() - startTime;
 
-      if (elapsed < animationDuration) {
-        // Still animating, show random faces
-        dieElement.src = getRandomFaceImage(dieType);
+          if (elapsed < animationDuration) {
+            // Still animating, show random faces
+            dieElement.src = getRandomFaceImage(dieType);
 
-        // Calculate next interval time with falloff
-         // This falloff calculation now uses the random animationDuration for this specific die
-         const progress = elapsed / animationDuration;
-         // Simple linear increase of interval based on progress
-         let currentInterval = intervalTime + progress * (maxIntervalTime - intervalTime);
-         currentInterval = Math.min(currentInterval, maxIntervalTime); // Cap at max interval
+            // Calculate next interval time with falloff
+            const progress = elapsed / animationDuration;
+            let currentInterval = intervalTime + progress * (maxIntervalTime - intervalTime);
+            currentInterval = Math.min(currentInterval, maxIntervalTime); // Cap at max interval
 
-        setTimeout(animate, currentInterval); // Schedule next frame
-      } else {
-        // Animation finished for this die, show final result
-         // Find the result for this specific die element based on its index in the animation array
-         // This assumes the order in diceToAnimate matches the order of dieElement creation
-         const resultForThisDie = currentRollResults[index].result;
-         let faceToShow = resultForThisDie;
-         // Adjust for d10 if 10 is represented by face 10 image
-         if (dieType === 'd10' && resultForThisDie === 10) {
-             faceToShow = 10; // Use 10 if your image is d10_face10.png
-         } else if (dieType === 'd10' && resultForThisDie === 0) {
-             // If your rollDie function can return 0 for d10s, treat it as 10
-             faceToShow = 10; // Assuming 0 face image is d10_face10.png
-         }
-         dieElement.src = `../images/${dieType}_face${faceToShow}.png`;
+            setTimeout(animate, currentInterval); // Schedule next frame
+          } else {
+            // Animation finished for this die, show final result
+            const resultForThisDie = currentRollResults[index].result;
+            let faceToShow = resultForThisDie;
+            // Adjust for d10 if 10 is represented by face 10 image
+            if (dieType === 'd10' && resultForThisDie === 10) {
+                faceToShow = 10;
+            } else if (dieType === 'd10' && resultForThisDie === 0) {
+                faceToShow = 10;
+            }
+            dieElement.src = `../images/${dieType}_face${faceToShow}.png`;
 
-        // --- Add click listener for re-rolling AFTER animation finishes ---
-        dieElement.addEventListener('click', rerollSingleDie);
-        // -----------------------------------------------------------------
+            // Add click listener for re-rolling AFTER animation finishes
+            dieElement.addEventListener('click', rerollSingleDie);
 
+            dieElement.classList.remove('is-rolling'); // Remove is-rolling class when settled
 
-        completedRolls++;
-
-        if (completedRolls === totalDiceCount) {
-            // All dice finished animating
-            lastRollResults = currentRollResults; // Store results for display/reference
-            displayTotalSum();
-             // Sound will likely finish on its own or can be stopped here if needed
-             // if (!rollSound.paused) { rollSound.pause(); } // Optional
+            resolve(); // Resolve the promise for this die
+          }
+        } catch (error) {
+            console.error('Error within single die animation:', error);
+            reject(error); // Reject the promise on error
         }
       }
-    }
+      animate(); // Start the animation loop for this promise
+    });
 
-    animate(); // Start the animation loop
+    animationPromises.push(animationPromise); // Add promise to the array
   });
 
-   updateRollButtonDisplay(); // Update button state/text immediately after roll starts
+  // Wait for all animations to complete
+  Promise.all(animationPromises)
+    .then(() => {
+      // All animations completed successfully
+      isRolling = false;
+      rollBtn.disabled = false;
+      updateRollButtonDisplay();
+      lastRollResults = currentRollResults; // Store results for reference/display
+      displayTotalSum(); // Update the total sum display
+      console.log('All animations finished. Final Results:', currentRollResults);
+    })
+    .catch(error => {
+      // Handle any error during animation
+      console.error("Error during dice animation promise handling:", error);
+      isRolling = false;
+      rollBtn.disabled = false;
+      updateRollButtonDisplay();
+      // Optionally clear results or show an error message
+      resultsArea.innerHTML = '<p class="error-message">Animation error occurred.</p>';
+    });
 }
 
 // Display the sum of the results
@@ -476,8 +525,26 @@ originalDiceIcons.forEach(icon => {
   icon.addEventListener('contextmenu', handleDiceClick); // Listen for right-click
 });
 
-rollBtn.addEventListener('click', performRoll);
+// --- Add delegated event listener to resultsArea for removing pending dice --- 
+resultsArea.addEventListener('click', function(event) {
+    // Check if the clicked element is a remove button
+    if (event.target.classList.contains('remove-pending-btn')) {
+        const container = event.target.closest('.selected-die-icon');
+        if (container) {
+            const dieType = container.dataset.die;
+            if (selectedDice[dieType] > 0) {
+                selectedDice[dieType]--; // Decrement state count
+                container.remove(); // Remove the container element
+                lastRollsConfig = {}; // Reset lastRollsConfig as selection changed
+                updateRollButtonDisplay(); // Update button text and state
+            }
+        }
+    }
+});
 
+rollBtn.addEventListener('click', () => {
+   performRoll(); // Call the main roll function
+}); // <--- Add the closing brace and parenthesis for the listener
 
-// --- Initialization ---
+// --- Initialization --- 
 updateRollButtonDisplay(); // Set initial state of button

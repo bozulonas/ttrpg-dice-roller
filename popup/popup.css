@@ -71,6 +71,11 @@ body {
     display: block;
 }
 
+/* Add a wiggle animation on load to the top selector dice images */
+.dice-icon.original img {
+  animation: jiggle-keyframes 0.5s ease-in-out;
+}
+
 /* The area where selected dice appear before rolling, and where animation happens */
 .results {
   display: flex;
@@ -87,15 +92,27 @@ body {
 
 /* Style for dice icons shown in resultsArea BEFORE rolling */
 .selected-die-icon {
-    /* Doubled size for selected dice icons */
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    opacity: 1.0; /* Full opacity */
-    border: 1px solid #999; /* Optional: visual cue */
-    border-radius: 8px; /* Increased border-radius slightly */
-    padding: 4px; /* Increased padding slightly */
-    box-sizing: border-box;
+  position: relative; /* Needed for absolute positioning of the remove button */
+  display: inline-block; /* Or block, depending on layout */
+  margin: 2px;
+  padding: 0; /* Remove padding if image is the only content */
+  /* Doubled size for selected dice icons */
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  opacity: 1.0; /* Full opacity */
+  border: 1px solid #999; /* Optional: visual cue */
+  border-radius: 8px; /* Increased border-radius slightly */
+  padding: 4px; /* Increased padding slightly */
+  box-sizing: border-box;
+}
+
+.selected-die-icon img {
+  display: block; /* Ensure image behaves predictably */
+  width: 100%; /* Make image fill the icon space (adjust if needed) */
+  height: 100%;
+  object-fit: contain;
+  animation: jiggle-keyframes 0.5s ease-in-out infinite; /* Apply animation here and make it infinite */
 }
 
 /* Style for dice images DURING and AFTER rolling animation */
@@ -104,6 +121,37 @@ body {
     width: 100px;
     height: 100px;
     object-fit: contain;
+}
+
+/* Apply animation ONLY when the die is actively 'rolling' */
+.rolled-die.is-rolling {
+  animation: jiggle-keyframes 0.3s ease-in-out infinite; /* Faster roll effect */
+}
+
+/* Style for the remove 'X' button on pending dice */
+.remove-pending-btn {
+  position: absolute;
+  top: -5px; /* Adjust as needed */
+  right: -5px; /* Adjust as needed */
+  width: 16px;
+  height: 16px;
+  background-color: red;
+  color: white;
+  border: 1px solid darkred;
+  border-radius: 50%; /* Make it circular */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.remove-pending-btn:hover {
+  opacity: 1;
 }
 
 /* Hint Text Styling */
@@ -124,4 +172,17 @@ body {
     text-align: center;
     font-size: 1.2em; /* Increase sum font size relative to body */
     color: #333;
+}
+
+/* Jiggle Animation Keyframes */
+@keyframes jiggle-keyframes {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  50% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.result-item {
+  margin: 5px 0;
 }
