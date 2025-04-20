@@ -16,3 +16,6 @@ build/
 # Environment variables
 .env
 .env.local
+
+# Assets
+**/All Dice Faces.jpg
