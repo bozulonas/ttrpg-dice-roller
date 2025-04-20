@@ -109,15 +109,9 @@ function handleDiceClick(event) {
   event.preventDefault(); // Prevent context menu on right-click
 
   if (isRightClick) {
-      // Remove the last added die of this type from the resultsArea (pre-roll icons)
-      const selectedDieIcons = resultsArea.querySelectorAll(`.selected-die-icon[data-die="${dieType}"]`);
-      if (selectedDieIcons.length > 0) {
-          selectedDieIcons[selectedDieIcons.length - 1].remove(); // Remove the last one
-          selectedDice[dieType]--; // Decrement state count
-          lastRollsConfig = {}; // Reset lastRollsConfig as selection changed
-          updateRollButtonDisplay(); // Update button text and state
-      }
-      // If no dice of this type are in resultsArea, right-click on original does nothing.
+      // --- NEW: Perform instant roll on right-click ---
+      performInstantRoll(dieType);
+      // ----------------------------------------------
   } else { // Left click
       // Add a visual representation of the selected die to the resultsArea
       const selectedDieElement = document.createElement('img');
@@ -144,13 +138,87 @@ function handleDiceClick(event) {
       resultsArea.appendChild(selectedDieElement); // Add it to the results area
 
       selectedDice[dieType]++; // Increment state count
+
+      // Reset lastRollsConfig because the user is making a new selection
+      lastRollsConfig = {};
+      updateRollButtonDisplay(); // Update button text and state after modifying selection
   }
 
-  // Reset lastRollsConfig because the user is making a new selection
-  // This is already done inside the if/else blocks, but doing it here ensures it happens on any click
-  lastRollsConfig = {};
-  updateRollButtonDisplay(); // Update button text and state
+  // Note: updateRollButtonDisplay is now called only within the left-click logic
+  // or at the end of performInstantRoll for right-clicks.
 }
+
+
+// --- NEW Function: Perform Instant Roll ---
+function performInstantRoll(dieType) {
+    console.log(`Performing instant roll for: ${dieType}`);
+    // 1. Clear results area
+    resultsArea.innerHTML = '';
+
+    // 2. Play sound
+    rollSound.currentTime = 0;
+    rollSound.play().catch(e => console.error("Sound playback failed:", e));
+
+    // 3. Roll the die
+    const finalResult = rollDie(dieType);
+
+    // 4. Create and add the die element
+    const dieElement = document.createElement('img');
+    dieElement.classList.add('rolled-die'); // Use rolled-die class
+    dieElement.dataset.die = dieType;
+    dieElement.dataset.index = 0; // Only one die, index is 0
+    dieElement.src = getRandomFaceImage(dieType); // Start with random face
+    dieElement.alt = dieType;
+    resultsArea.appendChild(dieElement);
+
+    // 5. Animation Logic (adapted from rerollSingleDie)
+    let intervalTime = 50;
+    const intervalIncrease = 15;
+    const maxIntervalTime = 300;
+    const minDuration = 250;
+    const maxDuration = 800; // Slightly shorter max for single instant roll? User preference.
+    const animationDuration = Math.floor(Math.random() * (maxDuration - minDuration + 1)) + minDuration;
+    let startTime = Date.now();
+
+    function animateInstant() {
+        const elapsed = Date.now() - startTime;
+
+        if (elapsed < animationDuration) {
+            // Still animating
+            dieElement.src = getRandomFaceImage(dieType);
+            const progress = elapsed / animationDuration;
+            let currentInterval = intervalTime + progress * (maxIntervalTime - intervalTime);
+            currentInterval = Math.min(currentInterval, maxIntervalTime);
+            setTimeout(animateInstant, currentInterval);
+        } else {
+            // Animation finished
+            let faceToShow = finalResult;
+             if (dieType === 'd10' && finalResult === 10) {
+                 faceToShow = 10;
+             } else if (dieType === 'd10' && finalResult === 0) { // If rollDie can return 0
+                 faceToShow = 10;
+             }
+            dieElement.src = `../images/${dieType}_face${faceToShow}.png`;
+
+            // 6. Update state AFTER animation
+            lastRollResults = [{ type: dieType, result: finalResult }]; // Set result for this single roll
+            // Reset lastRollsConfig to reflect this instant roll as the "last roll"
+            lastRollsConfig = {}; // Clear any previous multi-die config
+            lastRollsConfig[dieType] = 1; // Set config for this single die
+
+            // 7. Display sum and update button
+            displayTotalSum();
+            updateRollButtonDisplay(); // Update button to show "Roll Again: 1dX"
+
+            // 8. Add re-roll listener (optional for instant roll, but consistent)
+            dieElement.addEventListener('click', rerollSingleDie);
+             dieElement.style.pointerEvents = 'auto'; // Ensure clickable if needed
+        }
+    }
+
+    animateInstant(); // Start animation
+}
+// --- End NEW Function ---
 
 
 // Handle clicks on rolled dice images to re-roll a single die
